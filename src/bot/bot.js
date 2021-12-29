@@ -10,6 +10,9 @@ async function onMessage(message, commands) {
     } catch(e) {
         if(e instanceof ERROR.InvalidStatementException)
             writer.printError(message, "Invalid Statement Exception!", e.message);
+        
+        else if(e instanceof ERROR.CommandNotFoundException)
+            writer.printError(message, "Cannot Not Found Exception!", e.message);
 
         else
             throw e;
