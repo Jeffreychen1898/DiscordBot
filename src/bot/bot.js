@@ -20,7 +20,7 @@ async function onMessage(message, commands) {
             writer.printError(message, "Command Error Exception!", e.message);
 
         else
-            throw e;
+            console.error(e);
     }
 }
 
@@ -32,7 +32,8 @@ function bot() {
     const intents = [
         discord.Intents.FLAGS.GUILDS,
         discord.Intents.FLAGS.GUILD_MEMBERS,
-        discord.Intents.FLAGS.GUILD_MESSAGES
+        discord.Intents.FLAGS.GUILD_MESSAGES,
+        discord.Intents.FLAGS.GUILD_VOICE_STATES
     ];
     const bot = new discord.Client({intents: intents});
     
