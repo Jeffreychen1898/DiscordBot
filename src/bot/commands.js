@@ -57,8 +57,8 @@ class Commands {
 
         let previous_index = 0;
         for(let i=0;i<splits.length;i++) {
-            front = previous_index;
-            back = splits[i];
+            let front = previous_index;
+            let back = splits[i];
             if(front == back)
                 continue;
             
@@ -104,7 +104,7 @@ class Commands {
     }
 
     $findIndexWithToken(array, split) {
-        index = [];
+        const index = [];
         for(let i=0;i<array.length;i++) {
             if(array[i] == split)
                 index.push(i);
@@ -130,9 +130,9 @@ class Commands {
         const types = [];
 
         let value = "";
-        let current_type = "";
+        let current_type = undefined;
 
-        for(const c in message) {
+        for(const c of message) {
             //handle quotes
             if(c == "\"") {
                 if(current_type == TOKEN_TYPES.ON_STRING)
