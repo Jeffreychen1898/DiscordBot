@@ -10,13 +10,20 @@ class CommandNotFoundException extends Error {
     }
 }
 
+class CommandErrorException extends Error {
+    constructor(message) {
+        super(message);
+    }
+}
+
 const errorMessages = {
     CANNOT_PARSE: "The command cannot be parsed! Make sure the syntax is correct!",
     COMMAND_NOT_FOUND: "You command you tried to execute does not exist!"
 };
 const exceptions = {
     InvalidStatementException,
-    CommandNotFoundException
+    CommandNotFoundException,
+    CommandErrorException
 };
 
 module.exports = {

@@ -6,13 +6,18 @@ const writer = require("./writer.js");
 
 async function onMessage(message, commands) {
     try {
+
         await commands.onMessage(message);
+
     } catch(e) {
         if(e instanceof ERROR.InvalidStatementException)
             writer.printError(message, "Invalid Statement Exception!", e.message);
         
         else if(e instanceof ERROR.CommandNotFoundException)
             writer.printError(message, "Cannot Not Found Exception!", e.message);
+        
+        else if(e instanceof ERROR.CommandNotFoundException)
+            writer.printError(message, "Command Error Exception!", e.message);
 
         else
             throw e;
