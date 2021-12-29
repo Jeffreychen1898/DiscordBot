@@ -1,12 +1,14 @@
-require("dotenv").config()
+require("dotenv").config();
 
-const express = require("express")
-const app = express()
+const express = require("express");
+const app = express();
 
-app.listen(process.env.PORT, () => {
-    console.log("Web server started on port: " + process.env.PORT)
-});
+const requests = require("./web/requests.js");
+const bot = require("./bot/bot.js");
 
-app.get("/", (req, res) => {
-    res.send("Hello World!")
-})
+function main() {
+    requests(app);
+    bot();
+}
+
+app.listen(process.env.PORT, main);
