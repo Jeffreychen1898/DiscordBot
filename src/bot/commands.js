@@ -116,11 +116,21 @@ class Commands {
     $parseCommand(tokens, types) {
         if(types[0] != TOKEN_TYPES.WORD)
             throw new ERROR.InvalidStatementException(ERROR_MSG.CANNOT_PARSE);
+
+        if(tokens.length == 1) {
+            const command = tokens[0];
+            tokens = tokens.splice(1);
+            types = types.splice(1);
+            return command;
+        }
         
-        if(tokens.length == 1 || types[1] == TOKEN_TYPES.SPACE) {
+        if(types[1] == TOKEN_TYPES.SPACE) {
+            const command = tokens[0];
+
             tokens = tokens.slice(2);
             types = types.slice(2);
-            return tokens[0];
+
+            return command;
         } else
             throw new ERROR.InvalidStatementException(ERROR_MSG.CANNOT_PARSE);
     }

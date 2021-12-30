@@ -19,8 +19,15 @@ async function onMessage(message, commands) {
         else if(e instanceof ERROR.CommandNotFoundException)
             writer.printError(message, "Command Error Exception!", e.message);
 
+        else if(e instanceof ERROR.OutOfBoundsException)
+            writer.printError(message, "Out Of Bounds Exception!", e.message);
+
         else
-            console.error(e);
+            if(process.env.PRODUCTION) {
+                writer.printError(message, "Unexpected Error!", "An unexpected error has occurred!");
+                console.error(e.message);
+            } else
+                throw e;
     }
 }
 
