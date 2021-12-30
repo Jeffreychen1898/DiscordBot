@@ -9,32 +9,26 @@ class CommandTrigger {
 
     async triggerCommands(message, command, parameters) {
         try {
-            switch(command) {
-                case "play":
-                    this.m_audioPlayer.play(message, parameters);
-                    break;
 
-                case "pause":
-                    this.m_audioPlayer.pause();
-                    break;
-                
-                case "resume":
-                    this.m_audioPlayer.resume();
-                    break;
-                
-                case "leave":
-                    this.m_audioPlayer.leave();
-                    break;
-                
-                case "next":
-                    this.m_audioPlayer.next();
-                    break;
+            if(command == "play")
+                await this.m_audioPlayer.play(message, parameters);
 
-                default:
-                    throw new ERROR.CommandNotFoundException(ERROR_MSG.COMMAND_NOT_FOUND);
-            }
+            else if(command == "pause")
+                this.m_audioPlayer.pause(message);
+
+            else if(command == "resume")
+                this.m_audioPlayer.resume(message);
+
+            else if(command == "leave")
+                this.m_audioPlayer.leave(message);
+
+            else if(command == "next")
+                this.m_audioPlayer.next(message);
+
+            else
+                throw new ERROR.CommandNotFoundException(ERROR_MSG.COMMAND_NOT_FOUND);
+
         } catch(e) {
-            console.log(e.message);
             throw e;
         }
     }

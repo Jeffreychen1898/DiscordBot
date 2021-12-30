@@ -2,70 +2,29 @@ const playdl = require("play-dl");
 const voice  = require("@discordjs/voice");
 
 const { ERROR, ERROR_MSG} = require("../../exceptions");
-
-/*
-retrieve data:
-    Title
-    URL
-    Timestamp
-    Thumbnail
-    Author
-
-queue data:
-    Title
-    URL
-    Timestamp
-*/
 const AUDIO_SETTINGS = {
     behaviors: {
         noSubscriber: voice.NoSubscriberBehavior.Pause
     }
 }
 
-class SoundPlayer {
-    constructor(searchLimit) {
-        this.m_searchLimit = searchLimit;
-
-        this.m_guildId = undefined;
-        this.m_connection = null;
-
-        this.m_audioPlayer = voice.createAudioPlayer(AUDIO_SETTINGS);
+class VoiceChannelConnection {
+    constructor(connection, player, channelId) {
+        this.m_connection = connection;
+        this.m_player = player;
+        this.channel = channelId;
     }
-
-    join(message) {
+    
+    async play(query, index, searchLimit) {
         try {
-            if(message.member.voice == undefined)
-                throw new ERROR.CommandNotFoundException(ERROR_MSG.VC_REQUIRED);
-            
-            if(this.m_guildId == message.guild.id)
-                return;
-
-            if(this.m_connection != null)
-                this.m_connection.destroy();
-
-            this.m_guildId = message.guild.id;
-            this.m_connection = voice.joinVoiceChannel({
-                channelId: message.member.voice.channel.id,
-                guildId: message.guild.id,
-                adapterCreator: message.guild.voiceAdapterCreator
-            });
-
-            this.m_connection.subscribe(this.m_audioPlayer);
-        } catch(e) {
-            throw e;
-        }
-    }
-
-    async play(searchQuery, index) {
-        try {
-            if(index < 0 || index >= this.m_searchLimit)
+            if(index < 0 || index >= searchLimit)
                 throw new ERROR.OutOfBoundsException(ERROR_MSG.INDEX_OUT_OF_BOUNDS);
             
-            const get_info = await this.search(searchQuery);
+            const get_info = await this.search(query, searchLimit);
             const stream = await playdl.stream(get_info[index].url);
 
             const resource = voice.createAudioResource(stream.stream, { inputType: stream.type });
-            this.m_audioPlayer.play(resource);
+            this.m_player.play(resource);
 
             return get_info[index];
         } catch(e) {
@@ -73,8 +32,45 @@ class SoundPlayer {
         }
     }
 
-    async search(searchQuery) {
-        const results = await playdl.search(searchQuery, { limit: this.m_searchLimit });
+    pause() {
+        if(!this.isPlaying())
+            return false;
+
+        return this.m_player.pause(true);
+    }
+
+    resume() {
+        if(!this.isPaused())
+            return false;
+
+        return this.m_player.unpause();
+    }
+
+    stop() {
+        if(this.isIdle())
+            return false;
+
+        return this.m_player.stop(true);
+    }
+
+    leave() {
+        this.m_connection.destroy();
+    }
+
+    isPlaying() {
+        return this.m_player.state.status == voice.AudioPlayerStatus.Playing;
+    }
+
+    isPaused() {
+        return this.m_player.state.status == voice.AudioPlayerStatus.Paused;
+    }
+
+    isIdle() {
+        return this.m_player.state.status == voice.AudioPlayerStatus.Idle;
+    }
+
+    async search(query, limit) {
+        const results = await playdl.search(query, { limit: limit });
         for(let i=0;i<results.length;i++) {
             const element = results[i];
             const new_format = {
@@ -88,49 +84,31 @@ class SoundPlayer {
         }
         return results;
     }
+}
 
-    pause() {
-        if(!this.isPlaying())
-            return false;
+function join(message) {
+    try {
+        if(!message.member.voice.channel)
+            throw new ERROR.CommandErrorException(ERROR_MSG.VC_REQUIRED);
+        
+        const new_audio_player = voice.createAudioPlayer(AUDIO_SETTINGS);
+        const channel_id = message.member.voice.channel.id;
+        const connection = voice.joinVoiceChannel({
+            channelId: channel_id,
+            guildId: message.guild.id,
+            adapterCreator: message.guild.voiceAdapterCreator
+        });
 
-        return this.m_audioPlayer.pause(true);
-    }
+        connection.subscribe(new_audio_player);
+        const voice_connection = new VoiceChannelConnection(connection, new_audio_player, channel_id);
 
-    resume() {
-        if(!this.isPaused())
-            return false;
-
-        return this.m_audioPlayer.unpause();
-    }
-
-    stop() {
-        if(this.isIdle())
-            return false;
-
-        return this.m_audioPlayer.stop(true);
-    }
-
-    leave() {
-        if(this.m_connection == null)
-            return false;
-
-        this.m_connection.destroy();
-        this.m_connection = null;
-
-        return true;
-    }
-
-    isPlaying() {
-        return this.m_audioPlayer.state.status == voice.AudioPlayerStatus.Playing;
-    }
-
-    isPaused() {
-        return this.m_audioPlayer.state.status == voice.AudioPlayerStatus.Paused;
-    }
-
-    isIdle() {
-        return this.m_audioPlayer.state.status == voice.AudioPlayerStatus.Idle;
+        return voice_connection;
+    } catch(e) {
+        throw e;
     }
 }
 
-module.exports = SoundPlayer;
+module.exports = {
+    join: join,
+    VoiceChannelConnection: VoiceChannelConnection
+};

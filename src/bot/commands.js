@@ -10,6 +10,13 @@ const TOKEN_TYPES = {
     EQUAL: 5
 };
 
+/*
+queue data:
+    Title
+    URL
+    Timestamp
+*/
+
 class Commands {
     constructor() {
         this.m_invokeCommand = process.env.PREFIX

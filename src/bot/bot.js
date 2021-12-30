@@ -4,19 +4,18 @@ const Commands = require("./commands.js");
 const { ERROR } = require("../exceptions.js");
 const writer = require("./writer.js");
 
-async function onMessage(message, commands) {
-    try {
+function onMessage(message, commands) {
+    const empty_method = () => {}
 
-        await commands.onMessage(message);
+    commands.onMessage(message).then(empty_method).catch((e) => {
 
-    } catch(e) {
         if(e instanceof ERROR.InvalidStatementException)
             writer.printError(message, "Invalid Statement Exception!", e.message);
         
         else if(e instanceof ERROR.CommandNotFoundException)
             writer.printError(message, "Cannot Not Found Exception!", e.message);
         
-        else if(e instanceof ERROR.CommandNotFoundException)
+        else if(e instanceof ERROR.CommandErrorException)
             writer.printError(message, "Command Error Exception!", e.message);
 
         else if(e instanceof ERROR.OutOfBoundsException)
@@ -28,14 +27,14 @@ async function onMessage(message, commands) {
                 console.error(e.message);
             } else
                 throw e;
-    }
+    });
 }
 
 function onReady(bot) {
     console.log(`Discord bot is now logged in as ${bot.user.username}!`);
 }
 
-function bot() {
+function discordBot() {
     const intents = [
         discord.Intents.FLAGS.GUILDS,
         discord.Intents.FLAGS.GUILD_MEMBERS,
@@ -52,4 +51,4 @@ function bot() {
     bot.login(process.env.BOT_TOKEN);
 }
 
-module.exports = bot;
+module.exports = discordBot;
