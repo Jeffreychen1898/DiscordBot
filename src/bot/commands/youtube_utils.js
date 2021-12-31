@@ -2,6 +2,7 @@ const playdl = require("play-dl");
 const voice  = require("@discordjs/voice");
 
 const { ERROR, ERROR_MSG} = require("../../exceptions");
+
 const AUDIO_SETTINGS = {
     behaviors: {
         noSubscriber: voice.NoSubscriberBehavior.Pause
@@ -80,13 +81,13 @@ class VoiceChannelConnection {
                 author: element.channel.name,
                 thumbnail: element.thumbnails[0].url
             }
-            element[i] = new_format;
+            results[i] = new_format;
         }
         return results;
     }
 }
 
-function join(message) {
+function join(message, onDisconnect, after) {
     try {
         if(!message.member.voice.channel)
             throw new ERROR.CommandErrorException(ERROR_MSG.VC_REQUIRED);
@@ -101,6 +102,20 @@ function join(message) {
 
         connection.subscribe(new_audio_player);
         const voice_connection = new VoiceChannelConnection(connection, new_audio_player, channel_id);
+
+        //disconnect callback
+        connection.on(voice.VoiceConnectionStatus.Disconnected, () => {
+            connection.destroy();
+            if(typeof onDisconnect == "function")
+                onDisconnect(message.guild.id);
+        });
+
+        //audio idle callback
+        if(typeof after == "function") {
+            new_audio_player.on(voice.AudioPlayerStatus.Idle, () => {
+                after();
+            });
+        }
 
         return voice_connection;
     } catch(e) {
