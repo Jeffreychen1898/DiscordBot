@@ -26,10 +26,10 @@ async function searchYoutube(query, limit) {
 }
 
 class VoiceChannelConnection {
-    constructor(connection, player, channelId) {
+    constructor(connection, player, channel) {
         this.m_connection = connection;
         this.m_player = player;
-        this.channel = channelId;
+        this.channel = channel;
     }
     
     async play(query, index, searchLimit) {
@@ -105,15 +105,14 @@ function join(message, onDisconnect, after) {
             throw new ERROR.CommandErrorException(ERROR_MSG.VC_REQUIRED);
         
         const new_audio_player = voice.createAudioPlayer(AUDIO_SETTINGS);
-        const channel_id = message.member.voice.channel.id;
         const connection = voice.joinVoiceChannel({
-            channelId: channel_id,
+            channelId: message.member.voice.channel.id,
             guildId: message.guild.id,
             adapterCreator: message.guild.voiceAdapterCreator
         });
 
         connection.subscribe(new_audio_player);
-        const voice_connection = new VoiceChannelConnection(connection, new_audio_player, channel_id);
+        const voice_connection = new VoiceChannelConnection(connection, new_audio_player, message.member.voice.channel);
 
         //disconnect callback
         connection.on(voice.VoiceConnectionStatus.Disconnected, () => {

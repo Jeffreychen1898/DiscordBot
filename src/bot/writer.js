@@ -62,8 +62,9 @@ function sendMessage(message, embed) {
 }
 
 module.exports = {
-    printError,
-    sendMessage,
-    writeMessage,
-    createEmbed
+    printError: printError,
+    sendMessage: sendMessage,
+    writeMessage: writeMessage,
+    createEmbed: createEmbed,
+    BLANK: BLANK_CHARACTER
 };

@@ -9,6 +9,7 @@ class AudioPlayer {
     constructor() {
         this.m_connectionList = storage.cacheObject("Voice Connections");
         this.m_queueList = storage.cacheObject("Audio Queue");
+        this.m_loopQueue = storage.cacheObject("Loop Queue");
     }
 
     async play(message, parameters) {
@@ -45,6 +46,38 @@ class AudioPlayer {
         } catch(e) {
             throw e;
         }
+    }
+
+    loop(message, parameters) {
+        if(!this.m_queueList.has(message.guild.id))
+            throw new ERROR.CommandErrorException(ERROR_MSG.NO_VOICE);
+
+        let randomize = true;
+        if(parameters["random"] == undefined)
+            randomize = false;
+        
+        this.m_loopQueue.set(message.guild.id, {
+            random: randomize,
+            list: [...this.m_queueList.get(message.guild.id)]
+        });
+
+        const not_random_message = "If you want to randomize the order everytime the queue is looped, add in a parameter called \"random\"!";
+        const on_random_message = "The queue will be randomized everytime it is looped!"
+        writer.writeMessage(message, {
+            title: "The queue will be looped!",
+            subtitle: `Use the "${process.env.PREFIX}unloop" command to remove this loop!`,
+            message: (randomize)?on_random_message:not_random_message
+        });
+    }
+
+    unloop(message) {
+        this.m_loopQueue.delete(message.guild.id);
+
+        writer.writeMessage(message, {
+            title: "The queue will no longer be looped!",
+            subtitle: `Use the "${process.env.PREFIX}loop" command to loop the queue again`,
+            message: writer.BLANK
+        });
     }
 
     next(message) {
@@ -101,7 +134,7 @@ class AudioPlayer {
         writer.writeMessage(message, {
             title: "The bot has left the voice channel!",
             subtitle: "The audio queue will be removed!",
-            message: "Use the \"play\" command to have the bot join the voice channel again!"
+            message: `Use the "${process.env.PREFIX}play" command to have the bot join the voice channel again!`
         });
     }
 
@@ -110,7 +143,7 @@ class AudioPlayer {
             writer.writeMessage(message, {
                 title: "Audio Queue",
                 subtitle: "The Queue is empty at the moment!",
-                message: "Use the play command to add audios to the queue!"
+                message: `Use the "${process.env.PREFIX}play" command to add audios to the queue!`
             });
             return;
         }
@@ -141,7 +174,7 @@ class AudioPlayer {
             if(this.m_connectionList.has(message.guild.id)) {
                 const previous_connection = this.m_connectionList.get(message.guild.id);
 
-                if(previous_connection.channel == current_channel) {
+                if(previous_connection.channel.id == current_channel) {
                     connection = previous_connection;
                     connection.stop();
 
@@ -172,8 +205,10 @@ class AudioPlayer {
     }
 
     async $onAudioIdleCallback(message, connection) {
-        if(message.member.voice.channel.members.size == 1)
-            this.leave();
+        if(this.m_connectionList.get(message.guild.id).channel.members.size == 1) {
+            this.leave(message);
+            return;
+        }
         
         this.m_queueList.get(message.guild.id).delete(0);
         if(this.m_queueList.get(message.guild.id).length > 0) {
@@ -187,10 +222,25 @@ class AudioPlayer {
                 throw e;
             }
 
-        } else {
-            //not sure if the bot should leave or stay
+        } else if (this.m_loopQueue.has(message.guild.id)) {
+            const queue_random = this.m_loopQueue.get(message.guild.id).random;
+            const new_queue = this.m_loopQueue.get(message.guild.id).list;
+
+            const copy_queue = new storage.JSONArray(...new_queue);
+            if(queue_random)
+                this.$scrambleArray(copy_queue);
+            
+            this.m_queueList.set(message.guild.id, copy_queue);
+
+            try {
+                const info_block = this.m_queueList.get(message.guild.id)[0];
+                await connection.searchUrlAndPlay(info_block.url);
+            } catch(e) {
+                throw e;
+            }
+
+        } else
             this.leave(message);
-        }
     }
 
     $isPlayingAudio(message) {
@@ -199,6 +249,15 @@ class AudioPlayer {
         
         if(!this.m_queueList.has(message.guild.id))
             throw new ERROR.CommandErrorException(ERROR_MSG.NO_VOICE);
+    }
+
+    $scrambleArray(array) {
+        for(let i=array.length-1;i>=1;i--) {
+            const random = Math.floor(Math.random() * (i - 1));
+            const copy_value = array[i];
+            array[i] = array[random];
+            array[random] = copy_value;
+        }
     }
 
     $connectionForceDisconnect(guildId) {

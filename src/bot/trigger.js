@@ -27,6 +27,12 @@ class CommandTrigger {
             
             else if(command == "queue")
                 this.m_audioPlayer.displayQueue(message);
+            
+            else if(command == "loop")
+                this.m_audioPlayer.loop(message, parameters);
+            
+            else if(command == "unloop")
+                this.m_audioPlayer.unloop(message);
 
             else
                 throw new ERROR.CommandNotFoundException(ERROR_MSG.COMMAND_NOT_FOUND);
