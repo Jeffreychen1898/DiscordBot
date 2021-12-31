@@ -28,7 +28,8 @@ const errorMessages = {
     VC_REQUIRED: "You must be in a voice channel to execute this command!",
     INDEX_OUT_OF_BOUNDS: "The index you requested in your command is out of bounds!",
     MISSING_ARGUMENT: "A crucial argument is missing from the command you executed!",
-    INVALID_VOICE_CONN: "There is no voice connection at the moment!"
+    INVALID_VOICE_CONN: "There is no voice connection at the moment!",
+    NO_VOICE: "There are no audio being played at the moment!"
 };
 const exceptions = {
     InvalidStatementException,

@@ -13,6 +13,14 @@ function printError(message, type, content) {
     sendMessage(message, embed);
 }
 
+function createEmbed(title) {
+    const embed = new discord.MessageEmbed();
+    embed.setTitle(title);
+    embed.setColor(COLOR_SUCCESS);
+
+    return embed;
+}
+
 /*
     title: String
     message: Array | String
@@ -56,5 +64,6 @@ function sendMessage(message, embed) {
 module.exports = {
     printError,
     sendMessage,
-    writeMessage
+    writeMessage,
+    createEmbed
 };

@@ -24,6 +24,9 @@ class CommandTrigger {
 
             else if(command == "next")
                 this.m_audioPlayer.next(message);
+            
+            else if(command == "queue")
+                this.m_audioPlayer.displayQueue(message);
 
             else
                 throw new ERROR.CommandNotFoundException(ERROR_MSG.COMMAND_NOT_FOUND);

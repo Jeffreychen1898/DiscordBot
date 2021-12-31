@@ -9,6 +9,22 @@ const AUDIO_SETTINGS = {
     }
 }
 
+async function searchYoutube(query, limit) {
+    const results = await playdl.search(query, { limit: limit });
+    for(let i=0;i<results.length;i++) {
+        const element = results[i];
+        const new_format = {
+            title: element.title,
+            url: element.url,
+            time: element.durationRaw,
+            author: element.channel.name,
+            thumbnail: element.thumbnails[0].url
+        }
+        results[i] = new_format;
+    }
+    return results;
+}
+
 class VoiceChannelConnection {
     constructor(connection, player, channelId) {
         this.m_connection = connection;
@@ -21,13 +37,25 @@ class VoiceChannelConnection {
             if(index < 0 || index >= searchLimit)
                 throw new ERROR.OutOfBoundsException(ERROR_MSG.INDEX_OUT_OF_BOUNDS);
             
-            const get_info = await this.search(query, searchLimit);
+            const get_info = await searchYoutube(query, searchLimit);
             const stream = await playdl.stream(get_info[index].url);
 
             const resource = voice.createAudioResource(stream.stream, { inputType: stream.type });
             this.m_player.play(resource);
 
             return get_info[index];
+        } catch(e) {
+            throw e;
+        }
+    }
+
+    async searchUrlAndPlay(url) {
+        try {
+
+            const stream = await playdl.stream(url);
+            const resource = voice.createAudioResource(stream.stream, { inputType: stream.type });
+            this.m_player.play(resource);
+
         } catch(e) {
             throw e;
         }
@@ -69,22 +97,6 @@ class VoiceChannelConnection {
     isIdle() {
         return this.m_player.state.status == voice.AudioPlayerStatus.Idle;
     }
-
-    async search(query, limit) {
-        const results = await playdl.search(query, { limit: limit });
-        for(let i=0;i<results.length;i++) {
-            const element = results[i];
-            const new_format = {
-                title: element.title,
-                url: element.url,
-                time: element.durationRaw,
-                author: element.channel.name,
-                thumbnail: element.thumbnails[0].url
-            }
-            results[i] = new_format;
-        }
-        return results;
-    }
 }
 
 function join(message, onDisconnect, after) {
@@ -113,7 +125,7 @@ function join(message, onDisconnect, after) {
         //audio idle callback
         if(typeof after == "function") {
             new_audio_player.on(voice.AudioPlayerStatus.Idle, () => {
-                after();
+                after(voice_connection);
             });
         }
 
@@ -125,5 +137,6 @@ function join(message, onDisconnect, after) {
 
 module.exports = {
     join: join,
+    searchYoutube: searchYoutube,
     VoiceChannelConnection: VoiceChannelConnection
 };
