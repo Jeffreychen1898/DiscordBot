@@ -126,6 +126,7 @@ class AudioPlayer {
         this.m_connectionList.delete(message.guild.id);
 
         this.m_queueList.delete(message.guild.id);
+        this.m_loopQueue.delete(message.guild.id);
 
         writer.writeMessage(message, {
             title: "The bot has left the voice channel!",

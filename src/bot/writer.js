@@ -56,7 +56,10 @@ function writeMessage(message, data) {
 function sendMessage(message, embed) {
     const text = `Responding to ${message.member.nickname}`;
     const image = message.author.avatarURL();
-    embed.setFooter(text, image);
+    embed.setFooter({
+        text: text,
+        iconURL: image
+    });
 
     message.channel.send({ embeds: [embed] });
 }
