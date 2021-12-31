@@ -80,6 +80,24 @@ class AudioPlayer {
         });
     }
 
+    showCurrent(message) {
+        if(!this.m_queueList.has(message.guild.id))
+            throw new ERROR.CommandErrorException(ERROR_MSG.NO_VOICE);
+        
+        const info = this.m_queueList.get(message.guild.id)[0];
+
+        writer.writeMessage(message, {
+            title: "This audio is currently playing!",
+            subtitle: info.title,
+            thumbnail: info.thumbnail,
+            url: info.url,
+            message: [
+                info.author + " - " + info.time,
+                info.url
+            ]
+        });
+    }
+
     next(message) {
         this.$isPlayingAudio(message);
 

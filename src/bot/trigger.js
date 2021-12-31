@@ -33,6 +33,9 @@ class CommandTrigger {
             
             else if(command == "unloop")
                 this.m_audioPlayer.unloop(message);
+            
+            else if(command == "currentaudio")
+                this.m_audioPlayer.showCurrent(message);
 
             else
                 throw new ERROR.CommandNotFoundException(ERROR_MSG.COMMAND_NOT_FOUND);
