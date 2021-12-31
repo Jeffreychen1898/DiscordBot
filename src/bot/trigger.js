@@ -11,7 +11,7 @@ class CommandTrigger {
         try {
 
             if(command == "play")
-                await this.m_audioPlayer.play(message, parameters);
+                await this.m_audioPlayer.playAudio(message, parameters);
 
             else if(command == "pause")
                 this.m_audioPlayer.pause(message);
@@ -40,6 +40,20 @@ class CommandTrigger {
             else
                 throw new ERROR.CommandNotFoundException(ERROR_MSG.COMMAND_NOT_FOUND);
 
+        } catch(e) {
+            throw e;
+        }
+    }
+
+    async simpleCommands(message, command, content) {
+        try {
+
+            if(command == "play")
+                await this.m_audioPlayer.simplePlay(message, content);
+            
+            else
+                throw new ERROR.CommandNotFoundException(ERROR_MSG.COMMAND_NOT_FOUND);
+            
         } catch(e) {
             throw e;
         }

@@ -12,7 +12,8 @@ const TOKEN_TYPES = {
 
 class Commands {
     constructor() {
-        this.m_invokeCommand = process.env.PREFIX
+        this.m_invokeCommand = process.env.PREFIX;
+        this.m_secondPrefix = process.env.SECOND_PREFIX;
         this.m_trigger = new CommandTrigger();
     }
 
@@ -28,6 +29,10 @@ class Commands {
                 
                 const [command, parameters] = this.$parseCommandMessage(command_message);
                 await this.m_trigger.triggerCommands(message, command, parameters);
+
+            } else if(message.content[0] == this.m_secondPrefix) {
+                const [command, content] = this.$parseSimpleCommand(message.content.slice(1));
+                await this.m_trigger.simpleCommands(message, command, content.trim());
             }
         } catch(e) {
             throw e;
@@ -35,6 +40,21 @@ class Commands {
     }
 
     /* private */
+    $parseSimpleCommand(message) {
+        for(let i=0;i<message.length;i++) {
+            if(message[i] == " " && i == 0)
+                throw new ERROR.InvalidStatementException(ERROR_MSG.CANNOT_PARSE);
+
+            if(message[i] == " ")
+                return [message.slice(0, i), message.slice(i)];
+
+            if(!this.$isLetter(message[i]))
+                throw new ERROR.InvalidStatementException(ERROR_MSG.CANNOT_PARSE);
+        }
+
+        return [message, ""];
+    }
+
     $parseCommandMessage(message) {
         try {
             let [ tokens, types ] = this.$tokenize(message);

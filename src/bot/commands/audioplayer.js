@@ -12,40 +12,18 @@ class AudioPlayer {
         this.m_loopQueue = storage.cacheObject("Loop Queue");
     }
 
-    async play(message, parameters) {
-        try {
-            if(parameters["s"] == undefined)
-                throw new ERROR.CommandErrorException(ERROR_MSG.MISSING_ARGUMENT);
+    async playAudio(message, parameters) {
+        if(parameters["s"] == undefined)
+            throw new ERROR.CommandErrorException(ERROR_MSG.MISSING_ARGUMENT);
+        
+        await this.$play(message, parameters["s"]);
+    }
 
-            let info = undefined;
-
-            if(this.m_queueList.has(message.guild.id)) {
-
-                const youtube_results = await SoundPlayer.searchYoutube(parameters["s"], SEARCH_LIMIT);
-                info = youtube_results[0];
-                this.m_queueList.get(message.guild.id).push(info);
-
-            } else {
-
-                const connection = await this.$makeConnection(message);
-                info = await connection.play(parameters["s"], 0, SEARCH_LIMIT);
-
-                const new_queue_list = new storage.JSONArray(info);
-                this.m_queueList.set(message.guild.id, new_queue_list);
-
-            }
-
-            const output_message = {
-                title: info.title,
-                subtitle: info.author + " - " + info.time,
-                message: info.url,
-                thumbnail: info.thumbnail,
-                url: info.url
-            };
-            writer.writeMessage(message, output_message);
-        } catch(e) {
-            throw e;
-        }
+    async simplePlay(message, content) {
+        if(content == "")
+            throw new ERROR.CommandErrorException(ERROR_MSG.MISSING_ARGUMENT);
+        
+        await this.$play(message, content);
     }
 
     loop(message, parameters) {
@@ -180,6 +158,39 @@ class AudioPlayer {
     }
 
     /* private */
+    async $play(message, query) {
+        try {
+            let info = undefined;
+
+            if(this.m_queueList.has(message.guild.id)) {
+
+                const youtube_results = await SoundPlayer.searchYoutube(query, SEARCH_LIMIT);
+                info = youtube_results[0];
+                this.m_queueList.get(message.guild.id).push(info);
+
+            } else {
+
+                const connection = await this.$makeConnection(message);
+                info = await connection.play(query, 0, SEARCH_LIMIT);
+
+                const new_queue_list = new storage.JSONArray(info);
+                this.m_queueList.set(message.guild.id, new_queue_list);
+
+            }
+
+            const output_message = {
+                title: info.title,
+                subtitle: info.author + " - " + info.time,
+                message: info.url,
+                thumbnail: info.thumbnail,
+                url: info.url
+            };
+            writer.writeMessage(message, output_message);
+        } catch(e) {
+            throw e;
+        }
+    }
+
     async $makeConnection(message) {
         try {
             let connection = null;
