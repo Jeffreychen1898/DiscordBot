@@ -123,10 +123,7 @@ class AudioPlayer {
             throw new ERROR.CommandErrorException(ERROR_MSG.INVALID_VOICE_CONN);
 
         this.m_connectionList.get(message.guild.id).leave();
-        this.m_connectionList.delete(message.guild.id);
-
-        this.m_queueList.delete(message.guild.id);
-        this.m_loopQueue.delete(message.guild.id);
+        this.$connectionForceDisconnect(message.guild.id);
 
         writer.writeMessage(message, {
             title: "The bot has left the voice channel!",
@@ -292,6 +289,8 @@ class AudioPlayer {
 
     $connectionForceDisconnect(guildId) {
         this.m_connectionList.delete(guildId);
+        this.m_queueList.delete(guildId);
+        this.m_loopQueue.delete(guildId);
     }
 }
 
