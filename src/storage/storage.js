@@ -1,21 +1,11 @@
-const { JSONObject, JSONArray } = require("./json.js")
-
-const cacheData = new Map();
-
-function cacheObject(name) {
-    const new_json_object = new JSONObject();
-    cacheData.set(name, new_json_object);
-
-    return new_json_object;
-}
-
-function cacheRetrieve(name) {
-    return cacheData.get(name);
-}
+const memoryStorage = require("./memory.js");
+const databaseStorage = require("./database.js");
 
 module.exports = {
-    JSONObject: JSONObject,
-    JSONArray: JSONArray,
-    cacheObject: cacheObject,
-    cacheRetrieve: cacheRetrieve
+    JSONObject: memoryStorage.JSONObject,
+    JSONArray: memoryStorage.JSONArray,
+    cacheObject: memoryStorage.cacheObject,
+    cacheRetrieve: memoryStorage.cacheRetrieve,
+    databaseConnected: databaseStorage.databaseConnected,
+    getCollection: databaseStorage.getCollection
 };
