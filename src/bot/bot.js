@@ -1,10 +1,10 @@
 const discord = require("discord.js");
 
-const Commands = require("./commands.js");
+const commands = require("./commands.js");
 const { ERROR } = require("../exceptions.js");
 const writer = require("./writer.js");
 
-function onMessage(message, commands) {
+function onMessage(message) {
     const empty_method = () => {}
 
     commands.onMessage(message).then(empty_method).catch((e) => {
@@ -43,10 +43,8 @@ function discordBot() {
     ];
     const bot = new discord.Client({intents: intents});
     
-    const commands = new Commands();
-
     bot.on("ready", () => onReady(bot));
-    bot.on("messageCreate", message => onMessage(message, commands));
+    bot.on("messageCreate", message => onMessage(message));
 
     bot.login(process.env.BOT_TOKEN);
 }

@@ -12,11 +12,43 @@ class AudioPlayer {
         this.m_loopQueue = storage.cacheObject("Loop Queue");
     }
 
-    async playAudio(message, parameters) {
-        if(parameters["s"] == undefined)
-            throw new ERROR.CommandErrorException(ERROR_MSG.MISSING_ARGUMENT);
+    async trigger(message, command, parameters, content) {
+        if(command[1] == "play")
+            await this.playAudio(message, content);
+
+        else if(command[1] == "pause")
+            await this.pause(message);
+
+        else if(command[1] == "resume")
+            await this.resume(message);
+
+        else if(command[1] == "leave")
+            await this.leave(message);
+
+        else if(command[1] == "next")
+            await this.next(message);
+
+        else if(command[1] == "queue")
+            await this.displayQueue(message);
+
+        else if(command[1] == "loop")
+            await this.loop(message, command.slice(2));
+
+        else if(command[1] == "unloop")
+            await this.unloop(message);
+
+        else if(command[1] == "current")
+            await this.showCurrent(message);
+
+        else
+            throw new ERROR.CommandNotFoundException(ERROR_MSG.COMMAND_NOT_FOUND);
+    }
+
+    async playAudio(message, search) {
+        if(search.length == 0)
+            search = undefined;
         
-        await this.$play(message, parameters["s"]);
+        await this.$play(message, search);
     }
 
     async simplePlay(message, content) {
@@ -30,10 +62,12 @@ class AudioPlayer {
         if(!this.m_queueList.has(message.guild.id))
             throw new ERROR.CommandErrorException(ERROR_MSG.NO_VOICE);
 
-        let randomize = true;
-        if(parameters["random"] == undefined)
-            randomize = false;
-        
+        let randomize = false;
+        for(const param of parameters) {
+            if(param == "random")
+                randomize = true;
+        }
+
         this.m_loopQueue.set(message.guild.id, {
             random: randomize,
             list: [...this.m_queueList.get(message.guild.id)]
