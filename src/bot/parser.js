@@ -171,7 +171,7 @@ class CommandParser {
                 return rules.TOKEN_TYPES.STRING;
             
             default:
-                return TOKEN_TYPES.NONE;
+                return rules.TOKEN_TYPES.NONE;
         }
     }
 
