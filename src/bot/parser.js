@@ -78,9 +78,6 @@ class CommandParser {
         for(i=0;i<this.m_rawCommands.length;i++) {
             const c = this.m_rawCommands[i];
             const current_type = this.$getTokenType(c);
-
-            if(current_type == rules.TOKEN_TYPES.NONE)
-                throw new ERROR.InvalidStatementException(ERROR_MSG.CANNOT_PARSE);
             
             if(c == "(")
                 contains_parameters = true;
@@ -97,6 +94,9 @@ class CommandParser {
                     break;
 
             }
+
+            if(current_type == rules.TOKEN_TYPES.NONE)
+                throw new ERROR.InvalidStatementException(ERROR_MSG.CANNOT_PARSE);
 
             if(this.$onNextToken(previous_type, current_type) && i > 0) {
                 tokens.push(value);
